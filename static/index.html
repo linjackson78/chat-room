@@ -1,0 +1,39 @@
+<!doctype html>
+<html>
+
+<head>
+    <title>Socket.IO chat</title>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/vendor/angular/angular.min.js"></script>
+</head>
+
+<body ng-app="chatApp" ng-controller="mainCtrl">
+    <button ng-click="open()">connect</button>
+    <button ng-click="leave()">leave</button>
+    <br>
+    <input type="text" ng-model="userName">
+    <button ng-click="login(userName)">login</button>
+    <h3>current room: {{curRoom.name ? curRoom.name : "还没加入房间"}}</h3>
+    <input type="text" ng-model="newRoomName">
+    <button id="create-room" ng-click="createRoom(newRoomName)">create room</button>
+    <br>
+    <button ng-click="leaveRoom()">leave room</button>
+    <ul id="rooms">
+        <li class="room" ng-repeat="(id, room) in rooms">
+            {{room.name}}
+            <button ng-click="joinRoom(room.id)">join</button>
+        </li>
+    </ul>
+    <input type="text" ng-model="text2chat" value="hello">
+    <button id="room-chat" ng-click="send(text2chat)">room chat</button>
+    <h3>MESSAGES:</h3>
+    <ul id="messages">
+        <div ng-hide="messages.length">还没有消息 </div>
+        <li ng-repeat="msg in messages">
+            {{msg.userName}}@{{msg.date | date}}: {{msg.content}}
+        </li>
+    </ul>
+    <script src="/static/mainCtrl.js"></script>
+</body>
+
+</html>
