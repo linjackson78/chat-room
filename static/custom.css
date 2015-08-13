@@ -1,0 +1,16 @@
+.panel {
+    min-height: 500px;
+}
+
+.cursor-pointer {
+    cursor: pointer;
+}
+
+.list-group {
+	height: 423px;
+	overflow: scroll;
+}
+
+.message {
+	word-wrap: break-word;
+}

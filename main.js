@@ -27,7 +27,8 @@ function Room(name) {
 Room.prototype.addClient = function(client) {
     this.member[client.id] = client.personInfo;
     this.num++;
-    io.sockets.in(this.id).emit("room-changed", this);
+    io.sockets.in(this.id).emit("room-changed", this).in(this.id).emit("user-join", client.personInfo);
+    console.log("it should reach here");
 }
 
 Room.prototype.removeClient = function(client) {
@@ -37,16 +38,13 @@ Room.prototype.removeClient = function(client) {
         this.destroy();
         return;
     }
-    io.sockets.in(this.id).emit("room-changed", this)
+    io.sockets.in(this.id).emit("room-changed", this).in(this.id).emit("user-leave", client.personInfo)
 }
 
 Room.prototype.destroy = function() {
 	console.log("room destroyed")
-	console.log(roomManager)
     delete roomManager[this.id];
-    console.log(roomManager)
     io.emit("rooms-changed", roomManager);
-    console.log("end")
 }
 
 var totalClient = 0;
@@ -56,7 +54,7 @@ function Client(socket) {
     self.id = socket.id;
     self.socket = socket;
     self.curRoomId = null;
-    self.info = {
+    self.personInfo = {
     	name: "new commer # " + self.id,
     }
     totalClient++;
@@ -99,6 +97,8 @@ function Client(socket) {
             if (err) {
                 newRoom.destroy();
                 if (cb) cb.apply(null, arguments);
+            } else {
+                if (cb) cb.apply(null, arguments);
             }
         })
     })
@@ -139,7 +139,7 @@ Client.prototype.joinRoom = function(room, cb) {
         }
         self.curRoomId = room.id;
         room.addClient(self);
-        cb(null);
+        cb(null, room.id);
     })
 }
 
@@ -157,6 +157,7 @@ Client.prototype.leaveRoom = function(room, cb) {
 }
 
 io.on('connection', function(socket) {
+    console.log("A new connection.")
     client = new Client(socket);
     socket.emit("rooms-changed", roomManager)
 });

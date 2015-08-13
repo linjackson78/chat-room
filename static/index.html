@@ -2,37 +2,95 @@
 <html>
 
 <head>
-    <title>Socket.IO chat</title>
+    <title>Socket.IO 房间聊天 DEMO</title>
     <script src="/socket.io/socket.io.js"></script>
+    <link rel="stylesheet" href="/vendor/bootstrap/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/static/custom.css">
+    <!-- // <script src="/vendor/bootstrap/dist/js/bootstrap.min.js"></script> -->
     <script src="/vendor/angular/angular.min.js"></script>
+    <script src="/vendor/angularjs-scroll-glue/src/scrollglue.js"></script>
 </head>
 
 <body ng-app="chatApp" ng-controller="mainCtrl">
-    <button ng-click="open()">connect</button>
-    <button ng-click="leave()">leave</button>
-    <br>
-    <input type="text" ng-model="userName">
-    <button ng-click="login(userName)">login</button>
-    <h3>current room: {{curRoom.name ? curRoom.name : "还没加入房间"}}</h3>
-    <input type="text" ng-model="newRoomName">
-    <button id="create-room" ng-click="createRoom(newRoomName)">create room</button>
-    <br>
-    <button ng-click="leaveRoom()">leave room</button>
-    <ul id="rooms">
-        <li class="room" ng-repeat="(id, room) in rooms">
-            {{room.name}}
-            <button ng-click="joinRoom(room.id)">join</button>
-        </li>
-    </ul>
-    <input type="text" ng-model="text2chat" value="hello">
-    <button id="room-chat" ng-click="send(text2chat)">room chat</button>
-    <h3>MESSAGES:</h3>
-    <ul id="messages">
-        <div ng-hide="messages.length">还没有消息 </div>
-        <li ng-repeat="msg in messages">
-            {{msg.userName}}@{{msg.date | date}}: {{msg.content}}
-        </li>
-    </ul>
+    <div class="navbar navbar-static-top navbar-default text-center">
+        <div class="navbar-left navbar-text">全世界在线<span class="badge">{{totalNum}}</span></div>
+        <h3 ng-class="curRoom.name ? 'text-success' : 'text-danger'">
+            {{curRoom.name ? curRoom.name : "还没加入房间"}}
+            <!-- <button class="btn btn-link pull-left" ng-click="open()">打开连接</button> -->
+            <!-- <button class="btn btn-danger pull-right" ng-click="leave()">断开连接</button> -->
+            <span>
+                <small>这一次你叫"{{userName}}"</small>
+            </span>
+        </h3>
+    </div>
+    <div class="row row-equal-height">
+        <div class="col-md-3 section">
+            <div class="panel panel-info">
+                <div class="panel-heading text-center">
+                    <h4>房间列表</h4>
+                </div>
+                <div class="input-group">
+                    <input type="text" class="form-control" ng-model="newRoomName">
+                    <span class="input-group-btn">
+                        <button class="btn btn-info" ng-click="createRoom(newRoomName)">创建</button>
+                    </span>
+                </div>
+                <ul class="list-group">
+                    <li class="list-group-item text-center text-muted" ng-show="equals({}, rooms)">还没有房间</li>
+                    <li class="list-group-item" ng-repeat="(id, room) in rooms">
+                        <div>
+                            {{room.name}}
+                            <span class="pull-right glyphicon glyphicon-hand-left cursor-pointer" ng-hide="id === curRoom.id" ng-click="joinRoom(room.id)"></span>
+                            <span class="pull-right glyphicon glyphicon-ok" ng-show="id === curRoom.id"></span>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <div class="col-md-6 section">
+            <div class="panel panel-primary">
+                <div class="panel-heading text-center">
+                    <h4>消息列表</h4>
+                </div>
+                <ul class="messages list-group" scroll-glue>
+                    <li class="list-group-item text-center text-muted" ng-hide="messages.length">还没有消息 </li>
+                    <li class="list-group-item message" ng-repeat="msg in messages" ng-class="{ 'alert alert-success text-center': msg.action === 'join', 'alert alert-warning text-center': msg.action === 'leave'}">
+                        <span class="label" ng-show="msg.userName" ng-class="msg.userName === userName ? 'label-warning' : 'label-default'">{{msg.userName }} 说:</span> {{msg.content}}
+                    </li>
+                </ul>
+                <div class="form-send">
+                    <div class="input-group">
+                        <input type="text" class="form-control" ng-model="text2chat" ng-keypress="onEnter($event)" placeholder="即时扯淡...">
+                        <span class="input-group-btn">
+                            <button class="btn btn-success" ng-click="send(text2chat)">发送消息</button>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 section">
+            <div class="panel panel-success">
+                <div class="panel-heading">
+                    <div class="text-center">
+                        <h4>房间信息<span class="glyphicon glyphicon-log-out pull-right cursor-pointer" ng-show="curRoom.name" ng-click="leaveRoom()"></span></h4>
+                    </div>
+                    <div class="info" ng-show="curRoom.name">
+                        <span><span class="glyphicon glyphicon-user"></span> 在线人数：{{curRoom.num}}</span>
+                        <br>
+                        <span><span class="glyphicon glyphicon-time"></span> 创建时间：{{curRoom.createDate | date: "HH点:mm分"}}</span>
+                    </div>
+                </div>
+                <ul class="list-group">
+                    <li class="list-group-item text-center text-muted" ng-hide="curRoom.name">还没加入房间</li>
+                    <li class="list-group-item text-info" ng-repeat="(id, info) in curRoom.member">
+                        {{info.name}}
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <!-- <input type="text" ng-model="userName">
+    <button ng-click="login(userName)">login</button> -->
     <script src="/static/mainCtrl.js"></script>
 </body>
 
